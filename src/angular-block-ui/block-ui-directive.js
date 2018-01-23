@@ -24,72 +24,72 @@ blkUI.directive('blockUi', function (blockUiCompileFn) {
 
   return function ($scope, $element, $attrs) {
 
-	preLinkFunction();
+    preLinkFunction();
 
     $scope.$watch(function() {
-        return $attrs.blockUi;
+      return $attrs.blockUi;
     }, function() {
-		preLinkFunction();
+      preLinkFunction();
     });
 
     function preLinkFunction() {
       // If the element does not have the class "block-ui" set, we set the
-	  // default css classes from the config.
+      // default css classes from the config.
 
-	  if (!$element.hasClass('block-ui')) {
-	  	$element.addClass(blockUIConfig.cssClass);
-	  }
+      if (!$element.hasClass('block-ui')) {
+        $element.addClass(blockUIConfig.cssClass);
+      }
 
-	  // Expose the blockUiMessageClass attribute value on the scope
+      // Expose the blockUiMessageClass attribute value on the scope
 
-	  $attrs.$observe('blockUiMessageClass', function (value) {
-		$scope.$_blockUiMessageClass = value;
-	  });
+      $attrs.$observe('blockUiMessageClass', function (value) {
+        $scope.$_blockUiMessageClass = value;
+      });
 
-	  // Create the blockUI instance
-	  // Prefix underscore to prevent integers:
-	  // https://github.com/McNull/angular-block-ui/pull/8
+      // Create the blockUI instance
+      // Prefix underscore to prevent integers:
+      // https://github.com/McNull/angular-block-ui/pull/8
 
-	  var instanceId = $attrs.blockUi || '_' + $scope.$id;
-	  var srvInstance = blockUI.instances.get(instanceId);
+      var instanceId = $attrs.blockUi || '_' + $scope.$id;
+      var srvInstance = blockUI.instances.get(instanceId);
 
-	  // If this is the main (topmost) block element we'll also need to block any
-	  // location changes while the block is active.
+      // If this is the main (topmost) block element we'll also need to block any
+      // location changes while the block is active.
 
-	  if (instanceId === 'main') {
-	  	blockNavigation($scope, srvInstance, blockUIConfig);
-	  } else {
-	  	// Locate the parent blockUI instance
-	  	var parentInstance = $element.inheritedData('block-ui');
+      if (instanceId === 'main') {
+        blockNavigation($scope, srvInstance, blockUIConfig);
+      } else {
+        // Locate the parent blockUI instance
+        var parentInstance = $element.inheritedData('block-ui');
 
-	  	if (parentInstance) {
-	      // TODO: assert if parent is already set to something else
-		  srvInstance._parent = parentInstance;
-		}
-	  }
+        if (parentInstance) {
+          // TODO: assert if parent is already set to something else
+          srvInstance._parent = parentInstance;
+        }
+      }
 
-	  // Ensure the instance is released when the scope is destroyed
+      // Ensure the instance is released when the scope is destroyed
 
-	  $scope.$on('$destroy', function () {
-	  	srvInstance.release();
-	  });
+      $scope.$on('$destroy', function () {
+        srvInstance.release();
+      });
 
-	  // Increase the reference count
+      // Increase the reference count
 
-	  srvInstance.addRef();
+      srvInstance.addRef();
 
-	  // Expose the state on the scope
+      // Expose the state on the scope
 
-	  $scope.$_blockUiState = srvInstance.state();
+      $scope.$_blockUiState = srvInstance.state();
 
       $scope.$watch('$_blockUiState.blocking', function (value) {
-          // Set the aria-busy attribute if needed
-          $element.attr('aria-busy', !!value);
-          $element.toggleClass('block-ui-visible', !!value);
+        // Set the aria-busy attribute if needed
+        // $element.attr('aria-busy', !!value);
+        $element.toggleClass('block-ui-visible', !!value);
       });
 
       $scope.$watch('$_blockUiState.blockCount > 0', function (value) {
-          $element.toggleClass('block-ui-active', !!value);
+        $element.toggleClass('block-ui-active', !!value);
       });
 
       // If a pattern is provided assign it to the state
@@ -97,8 +97,8 @@ blkUI.directive('blockUi', function (blockUiCompileFn) {
       var pattern = $attrs.blockUiPattern;
 
       if (pattern) {
-          var regExp = blockUIUtils.buildRegExp(pattern);
-          srvInstance.pattern(regExp);
+        var regExp = blockUIUtils.buildRegExp(pattern);
+        srvInstance.pattern(regExp);
       }
 
       // Store a reference to the service instance on the element
