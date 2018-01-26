@@ -33,77 +33,97 @@ blkUI.directive('blockUi', function (blockUiCompileFn) {
     });
 
     function preLinkFunction() {
-      // If the element does not have the class "block-ui" set, we set the
-      // default css classes from the config.
+        // If the element does not have the class "block-ui" set, we set the
+        // default css classes from the config.
 
-      if (!$element.hasClass('block-ui')) {
-        $element.addClass(blockUIConfig.cssClass);
-      }
-
-      // Expose the blockUiMessageClass attribute value on the scope
-
-      $attrs.$observe('blockUiMessageClass', function (value) {
-        $scope.$_blockUiMessageClass = value;
-      });
-
-      // Create the blockUI instance
-      // Prefix underscore to prevent integers:
-      // https://github.com/McNull/angular-block-ui/pull/8
-
-      var instanceId = $attrs.blockUi || '_' + $scope.$id;
-      var srvInstance = blockUI.instances.get(instanceId);
-
-      // If this is the main (topmost) block element we'll also need to block any
-      // location changes while the block is active.
-
-      if (instanceId === 'main') {
-        blockNavigation($scope, srvInstance, blockUIConfig);
-      } else {
-        // Locate the parent blockUI instance
-        var parentInstance = $element.inheritedData('block-ui');
-
-        if (parentInstance) {
-          // TODO: assert if parent is already set to something else
-          srvInstance._parent = parentInstance;
+        if (!$element.hasClass('block-ui')) {
+            $element.addClass(blockUIConfig.cssClass);
         }
-      }
 
-      // Ensure the instance is released when the scope is destroyed
+        // Expose the blockUiMessageClass attribute value on the scope
 
-      $scope.$on('$destroy', function () {
-        srvInstance.release();
-      });
+        $attrs.$observe('blockUiMessageClass', function (value) {
+            $scope.$_blockUiMessageClass = value;
+        });
 
-      // Increase the reference count
+        // Create the blockUI instance
+        // Prefix underscore to prevent integers:
+        // https://github.com/McNull/angular-block-ui/pull/8
 
-      srvInstance.addRef();
+        var instanceId = $attrs.blockUi || '_' + $scope.$id;
+        var srvInstance = blockUI.instances.get(instanceId);
 
-      // Expose the state on the scope
+        // If this is the main (topmost) block element we'll also need to block any
+        // location changes while the block is active.
 
-      $scope.$_blockUiState = srvInstance.state();
+        if (instanceId === 'main') {
+            blockNavigation($scope, srvInstance, blockUIConfig);
+        } else {
+            // Locate the parent blockUI instance
+            var parentInstance = $element.inheritedData('block-ui');
 
-      $scope.$watch('$_blockUiState.blocking', function (value) {
-        // Set the aria-busy attribute if needed
-        // $element.attr('aria-busy', !!value);
-        $element.toggleClass('block-ui-visible', !!value);
-      });
+            if (parentInstance) {
+                // TODO: assert if parent is already set to something else
+                srvInstance._parent = parentInstance;
+            }
+        }
 
-      $scope.$watch('$_blockUiState.blockCount > 0', function (value) {
-        $element.toggleClass('block-ui-active', !!value);
-      });
+        // Ensure the instance is released when the scope is destroyed
 
-      // If a pattern is provided assign it to the state
+        $scope.$on('$destroy', function () {
+            srvInstance.release();
+        });
 
-      var pattern = $attrs.blockUiPattern;
+        // Increase the reference count
 
-      if (pattern) {
-        var regExp = blockUIUtils.buildRegExp(pattern);
-        srvInstance.pattern(regExp);
-      }
+        srvInstance.addRef();
 
-      // Store a reference to the service instance on the element
+        // Expose the state on the scope
 
-      $element.data('block-ui', srvInstance);
+        $scope.$_blockUiState = srvInstance.state();
+
+        $scope.$watch('$_blockUiState.blocking', function (value) {
+            // Set the aria-busy attribute if needed
+            // $element.attr('aria-busy', !!value);
+            $element.toggleClass('block-ui-visible', !!value);
+        });
+
+        $scope.$watch('$_blockUiState.blockCount > 0', function (value) {
+            $element.toggleClass('block-ui-active', !!value);
+        });
+
+        if ($attrs.blockUiDynamic) {
+            $scope.$watch(function () {
+                return $attrs.blockUi;
+            }, function () {
+                srvInstance ? srvInstance.release() : '';
+
+                instanceId = $attrs.blockUi;
+                srvInstance = blockUI.instances.get(instanceId);
+                srvInstance.addRef();
+                $scope.$_blockUiState = srvInstance.state();
+                pattern = $attrs.blockUiPattern;
+
+                if (pattern) {
+                    var regExp = blockUIUtils.buildRegExp(pattern);
+                    srvInstance.pattern(regExp);
+                }
+                $element.data('block-ui', srvInstance);
+            });
+        }
+
+        // If a pattern is provided assign it to the state
+
+        var pattern = $attrs.blockUiPattern;
+
+        if (pattern) {
+            var regExp = blockUIUtils.buildRegExp(pattern);
+            srvInstance.pattern(regExp);
+        }
+
+        // Store a reference to the service instance on the element
+
+        $element.data('block-ui', srvInstance);
     }
   };
 
