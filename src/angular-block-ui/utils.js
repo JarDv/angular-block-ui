@@ -28,17 +28,24 @@ blkUI.factory('blockUIUtils', function() {
       }
     },
     isElementInBlockScope: function($element, blockScope) {
-      var c = $element.inheritedData('block-ui');
+        var c = $element.inheritedData('block-ui');
+        var i = 1;
 
-      while(c) {
-        if(c === blockScope) {
-          return true;
+        while(c) {
+            if(c === blockScope) {
+                return true;
+            }
+
+            i++;
+
+            if (i > 10) {
+                return false;
+            }
+
+            c = c._parent;
         }
 
-        c = c._parent;
-      }
-
-      return false;
+        return false;
     },
     findElement: function ($element, predicateFn, traverse) {
       var ret = null;

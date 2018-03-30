@@ -700,17 +700,24 @@ blkUI.factory('blockUIUtils', function() {
       }
     },
     isElementInBlockScope: function($element, blockScope) {
-      var c = $element.inheritedData('block-ui');
+        var c = $element.inheritedData('block-ui');
+        var i = 1;
 
-      while(c) {
-        if(c === blockScope) {
-          return true;
+        while(c) {
+            if(c === blockScope) {
+                return true;
+            }
+
+            i++;
+
+            if (i > 10) {
+                return false;
+            }
+
+            c = c._parent;
         }
 
-        c = c._parent;
-      }
-
-      return false;
+        return false;
     },
     findElement: function ($element, predicateFn, traverse) {
       var ret = null;
@@ -753,6 +760,7 @@ blkUI.factory('blockUIUtils', function() {
   return utils;
 
 });
+
 // Automatically generated.
 // This file is already embedded in your main javascript output, there's no need to include this file
 // manually in the index.html. This file is only here for your debugging pleasures.
